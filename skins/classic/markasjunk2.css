@@ -2,6 +2,12 @@
  * MarkAsJunk2 plugin styles
  */
 
+#spammenu,
+#nospammenu {
+    top: 30px;
+    left: 180px;
+}
+
 #messagetoolbar a.markasjunk2,
 #messagetoolbar a.markasjunk2Sel,
 #messagetoolbar a.markasnotjunk2,

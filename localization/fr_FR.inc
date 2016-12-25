@@ -2,11 +2,15 @@
 /* Author: */
 
 $labels = array();
-$labels['buttonjunk'] = 'Marquer comme spam';
-$labels['markasjunk'] = 'Comme spam';
-$labels['buttonnotjunk'] = 'Ceci n\'est pas un spam';
-$labels['markasnotjunk'] = 'Comme acceptable';
+$labels['buttonjunk'] = 'Rapporter comme spam';
+$labels['markasjunk'] = 'Rapporter comme spam';
+$labels['buttonnotjunk'] = 'Marquer comme msg légitime';
+$labels['markasnotjunk'] = 'N\'est pas du spam';
+$labels['notjunk'] = 'Msg légitime';
+$labels['junk'] = 'Pourriel';
 
 $messages = array();
-$messages['reportedasjunk'] = 'Message classé en spam';
-$messages['reportedasnotjunk'] = 'Message déplacé dans Inbox';
+$messages['reportedasjunk'] = 'Message classé comme spam';
+$messages['reportedasnotjunk'] = 'Message classé comme légitime';
+
+?>

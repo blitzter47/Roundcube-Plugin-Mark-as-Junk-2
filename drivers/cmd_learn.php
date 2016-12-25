@@ -4,6 +4,8 @@
  * Command line learn driver
  * @version 2.0
  * @author Philip Weir
+ * Modified by Chi-Huy Trinh, 2016
+ *
  * Patched by Julien Vehent to support DSPAM
  * Enhanced support for DSPAM by Stevan Bajic <stevan@bajic.ch>
  *
@@ -27,12 +29,12 @@
 
 class markasjunk2_cmd_learn
 {
-	public function spam($uids, $mbox)
+	public function spam($uids)
 	{
 		$this->_do_salearn($uids, true);
 	}
 
-	public function ham($uids, $mbox)
+	public function ham($uids)
 	{
 		$this->_do_salearn($uids, false);
 	}
@@ -58,32 +60,47 @@ class markasjunk2_cmd_learn
 			$command = str_replace('%i', $identity_arr['email'], $command);
 		}
 
-		foreach ($uids as $uid) {
-			// reset command for next message
-			$tmp_command = $command;
-
+		foreach (explode(",", $uids) as $uid) {
 			// get DSPAM signature from header (if %xds macro is used)
 			if (preg_match('/%xds/', $command)) {
 				if (preg_match('/^X\-DSPAM\-Signature:\s+((\d+,)?([a-f\d]+))\s*$/im', $rcmail->storage->get_raw_headers($uid), $dspam_signature))
-					$tmp_command = str_replace('%xds', $dspam_signature[1], $tmp_command);
+					$tmp_command = str_replace('%xds', $dspam_signature[1], $command);
 				else
 					continue; // no DSPAM signature found in headers -> continue with next uid/message
 			}
+            
+			//if (preg_match('/%to/', $command)) {
+				//if (preg_match('/^To:.*$/m', $rcmail->storage->get_raw_headers($uid), $to_line)) {
+                    //preg_match_all('/[a-zA-z0-9+\-_%\.]+\@[a-zA-z0-9+\-_%]+[a-zA-z0-9+\-_%\.]+/m', $to_line[0][0], $recipients);
+                    //if (count($recipients) > 1 && in_array($_SESSION['username'], $recipients))
+                        //$recipients = array_search($_SESSION['username'], $recipients);
+					//$tmp_command = str_replace('%to', $recipients[0], $command);
+                //}
+			//}
+            
+			if (preg_match('/%from/', $command)) {
+				if (preg_match('/^From:.*$/m', $rcmail->storage->get_raw_headers($uid), $from_line)) {
+                    preg_match_all('/[a-zA-z0-9+\-_%\.]+\@[a-zA-z0-9+\-_%]+[a-zA-z0-9+\-_%\.]+/m', $from_line[0], $sender);
+					$tmp_command = str_replace('%from', $sender[0][0], $command);
+                }
+			}
 
-			if (preg_match('/%f/', $command)) {
+			if (preg_match('/%f /', $command)) {
 				$tmpfname = tempnam($temp_dir, 'rcmSALearn');
 				file_put_contents($tmpfname, $rcmail->storage->get_raw_body($uid));
-				$tmp_command = str_replace('%f', $tmpfname, $tmp_command);
+				$tmp_command = str_replace('%f', $tmpfname, $command);
 			}
 
 			exec($tmp_command, $output);
+            
+            $output = implode(" ; ", $output);
 
 			if ($rcmail->config->get('markasjunk2_debug')) {
 				rcube::write_log('markasjunk2', $tmp_command);
 				rcube::write_log('markasjunk2', $output);
 			}
 
-			if (preg_match('/%f/', $command))
+			if (preg_match('/%f /', $command))
 				unlink($tmpfname);
 
 			$output = '';

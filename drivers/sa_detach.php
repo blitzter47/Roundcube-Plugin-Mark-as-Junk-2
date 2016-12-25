@@ -4,6 +4,7 @@
  * SpamAssassin detach ham driver
  * @version 2.0
  * @author Philip Weir
+ * Modified by Chi-Huy Trinh, 2016
  *
  * Copyright (C) 2011-2014 Philip Weir
  *
@@ -35,8 +36,9 @@ class markasjunk2_sa_detach
 		$rcmail = rcube::get_instance();
 		$storage = $rcmail->storage;
 
-		$new_uids = array();
-		foreach ($uids as $uid) {
+        $new_uids = array();
+        $uids_arr = explode(',',$uids);
+		foreach ($uids_arr as $uid) {
 			$saved = false;
 			$message = new rcube_message($uid);
 
@@ -47,7 +49,8 @@ class markasjunk2_sa_detach
 						$saved = $storage->save_message($mbox, $orig_message_raw);
 
 						if ($saved !== false) {
-							$rcmail->output->command('rcmail_markasjunk2_move', null, $uid);
+							//$rcmail->output->command('rcmail_markasjunk2_move', null, $uid);
+                            $rcmail->storage->delete_message($uid);
 							array_push($new_uids, $saved);
 						}
 					}
@@ -56,7 +59,8 @@ class markasjunk2_sa_detach
 		}
 
 		if (sizeof($new_uids) > 0)
-			$uids = $new_uids;
+			$uids = $uids = implode(',', $new_uids);//$new_uids;
+        //$rcmail->output->command('checkmail'); // refresh page
 	}
 }
 
