@@ -122,6 +122,7 @@ function rcmail_markasjunk2_update() {
 		hamobj = hamobj.parent();
 	}
 
+<<<<<<< HEAD
 	if (!rcmail.env.markasjunk2_override && rcmail.env.markasjunk2_spam_mailbox && rcmail.env.mailbox != rcmail.env.markasjunk2_spam_mailbox) {
 		$('#spammenulink').parent().show();
 		$('#nospammenulink').parent().hide();
@@ -137,7 +138,25 @@ function rcmail_markasjunk2_update() {
 		$('#rcmContextMenu li.markasnotjunk2').show();
 		spamobj.hide();
 		hamobj.show();
+=======
+	var disp = {'spam': true, 'ham': true};
+	if (!rcmail.is_multifolder_listing() && rcmail.env.markasjunk2_spam_mailbox) {
+		if (rcmail.env.mailbox != rcmail.env.markasjunk2_spam_mailbox) {
+			disp.ham = false;
+		}
+		else {
+			disp.spam = false;
+		}
+>>>>>>> 805939eb36bbd0cbb421ccc2cacc1d009b1c2620
 	}
+
+	var evt_rtn = rcmail.triggerEvent('markasjunk2-update', {'objs': {'spamobj': spamobj, 'hamobj': hamobj}, 'disp': disp});
+	if (evt_rtn && evt_rtn.abort)
+		return;
+	disp = evt_rtn ? evt_rtn.disp : disp;
+
+	disp.spam ? spamobj.show() : spamobj.hide();
+	disp.ham ? hamobj.show() : hamobj.hide();
 }
 
 function rcmail_markasjunk2_status(command) {
