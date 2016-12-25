@@ -2,6 +2,12 @@
  * MarkAsJunk2 plugin styles
  */
 
+#spammenu,
+#nospammenu {
+    top: 40px;
+    left: 350px;
+}
+
 #messagetoolbar a.markasjunk2,
 #messagetoolbar a.markasjunk2Sel,
 #messagetoolbar a.markasnotjunk2,
@@ -13,13 +19,15 @@
 #messagetoolbar a.markasjunk2,
 #messagetoolbar a.markasjunk2Sel
 {
-  background-position: center -14px;
+  background-position: left -14px;
+  min-width: 64px;
 }
 
 #messagetoolbar a.markasnotjunk2,
 #messagetoolbar a.markasnotjunk2Sel
 {
-  background-position: center -61px;
+  background-position: left -61px;
+  min-width: 64px;
 }
 
 ul.toolbarmenu li a span.markasjunk2,

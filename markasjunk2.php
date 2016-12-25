@@ -10,6 +10,7 @@
  *
  * @author Philip Weir
  * Based on the Markasjunk plugin by Thomas Bruederli
+ * Modified by Chi-Huy Trinh, 2016
  *
  * Copyright (C) 2009-2014 Philip Weir
  *
@@ -41,37 +42,92 @@ class markasjunk2 extends rcube_plugin
 
 	function init()
 	{
-		$this->register_action('plugin.markasjunk2.junk', array($this, 'mark_message'));
-		$this->register_action('plugin.markasjunk2.not_junk', array($this, 'mark_message'));
+		$this->register_action('plugin.markasjunk2.junk', array($this, 'mark_junk'));
+		$this->register_action('plugin.markasjunk2.not_junk', array($this, 'mark_notjunk'));
 
 		$rcmail = rcube::get_instance();
 		$this->load_config();
 		$this->ham_mbox = $rcmail->config->get('markasjunk2_ham_mbox', 'INBOX');
 		$this->spam_mbox = $rcmail->config->get('markasjunk2_spam_mbox', $rcmail->config->get('junk_mbox', null));
-		$this->toolbar = $this->_set_toolbar_display($rcmail->config->get('markasjunk2_toolbar', -1), $rcmail->action);
-
-		// register the ham/spam flags with the core
-		$this->add_hook('storage_init', array($this, 'set_flags'));
+		$this->toolbar = $rcmail->action == 'show' ? $rcmail->config->get('markasjunk2_cp_toolbar', true) : $rcmail->config->get('markasjunk2_mb_toolbar', true);
 
 		if ($rcmail->action == '' || $rcmail->action == 'show') {
 			$this->include_script('markasjunk2.js');
 			$this->add_texts('localization', true);
 			$this->include_stylesheet($this->local_skin_path() .'/markasjunk2.css');
+			if ($rcmail->output->browser->ie && $rcmail->output->browser->ver == 6)
+				$this->include_stylesheet($this->local_skin_path() . '/ie6hacks.css');
 
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD
+			$mb_override = ($this->spam_mbox) ? false : true;
+			$display_junk = $display_not_junk = '';
+			if ($_SESSION['mbox'] == $this->spam_mbox)
+				$display_junk = 'display: none;';
+			elseif (!$mb_override)
+				$display_not_junk = 'display: none;';
+
+>>>>>>> temp
+			if ($this->toolbar) {
+                //$this->add_button(array('command' => 'plugin.markasjunk2.junk', 'type' => 'link', 'class' => 'button buttonPas markasjunk2 disabled', 'classact' => 'button markasjunk2', 'classsel' => 'button markasjunk2Sel', 'title' => 'markasjunk2.buttonjunk', 'label' => 'junk', 'style' => $display_junk), 'toolbar');
+                //$this->add_button(array('command' => 'plugin.markasjunk2.not_junk', 'type' => 'link', 'class' => 'button buttonPas markasnotjunk2 disabled', 'classact' => 'button markasnotjunk2', 'classsel' => 'button markasnotjunk2Sel', 'title' => 'markasjunk2.buttonnotjunk', 'label' => 'markasjunk2.notjunk', 'style' => $display_not_junk), 'toolbar');
+
+				$button = $this->api->output->button(array('command' => 'plugin.markasjunk2.junk', 'type' => 'link', 'class' => 'button buttonPas markasjunk2 disabled', 'classact' => 'button markasjunk2', 'classsel' => 'button markasjunk2Sel', 'title' => 'markasjunk2.buttonjunk', 'label' => 'markasjunk2.junk', 'style' => $display_junk."background-color: lightyellow;"));
+                //$submenu = html::span(array('id' => 'spammenulink', 'class' => 'dropbuttontip', 'onclick' => "UI.show_popup('spammenu');return false"), null);
+                //$submenu = '<span id="spammenulink" class="dropbuttontip" onclick="show_menu(\'spammenu\', this);return false"></span>';
+                $submenu = '<span id="spammenulink" class="dropbuttontip"></span>';
+                $this->api->add_content(html::tag('span', array('class' => 'dropbutton', 'id' => 'dbjunk', 'style' => $display_junk), $button.$submenu), 'toolbar');
+                //
+				$button0 = $this->api->output->button(array('command' => 'plugin.markasjunk2.not_junk', 'type' => 'link', 'class' => 'button buttonPas markasnotjunk2 disabled', 'classact' => 'button markasnotjunk2', 'classsel' => 'button markasnotjunk2Sel', 'title' => 'markasjunk2.buttonnotjunk', 'label' => 'markasjunk2.notjunk', 'style' => $display_not_junk."background-color: lightyellow;"));
+                //$submenu0 = html::span(array('id' => 'nospammenulink', 'class' => 'dropbuttontip', 'onclick' => "UI.show_popup('nospammenu');return false"), null);
+                //$submenu0 = '<span id="nospammenulink" class="dropbuttontip" onclick="show_menu(\'nospammenu\', this);return false"></span>';;
+                $submenu0 = '<span id="nospammenulink" class="dropbuttontip"></span>';;
+                $this->api->add_content(html::tag('span', array('class' => 'dropbutton', 'id' => 'dbnotjunk', 'style' => $display_not_junk), $button0.$submenu0), 'toolbar');
+                //
+				$markjunk = $this->api->output->button(array('command' => 'plugin.markasjunk2.junk', 'label' => 'markasjunk2.markasjunk', 'classact' => 'active'));
+                $attr = array('id' => 'nospammenu', 'class' => 'popupmenu');
+                $li = html::tag('li', array(), $markjunk);
+                $cont = html::tag('ul', array('class' => 'toolbarmenu'), $li);
+                $this->api->add_content(html::div($attr, $cont), 'toolbar');
+                //
+				$marknotjunk = $this->api->output->button(array('command' => 'plugin.markasjunk2.not_junk', 'label' => 'markasjunk2.markasnotjunk', 'classact' => 'active'));
+                $attr = array('id' => 'spammenu', 'class' => 'popupmenu');
+                $li = html::tag('li', array(), $marknotjunk);
+                $cont = html::tag('ul', array('class' => 'toolbarmenu'), $li);
+                $this->api->add_content(html::div($attr, $cont), 'toolbar');
+            }
+=======
 			if ($this->toolbar) {
 				// add the buttons to the main toolbar
 				$this->add_button(array('command' => 'plugin.markasjunk2.junk', 'type' => 'link', 'class' => 'button buttonPas markasjunk2 disabled', 'classact' => 'button markasjunk2', 'classsel' => 'button markasjunk2Sel', 'title' => 'markasjunk2.buttonjunk', 'label' => 'junk'), 'toolbar');
 				$this->add_button(array('command' => 'plugin.markasjunk2.not_junk', 'type' => 'link', 'class' => 'button buttonPas markasnotjunk2 disabled', 'classact' => 'button markasnotjunk2', 'classsel' => 'button markasnotjunk2Sel', 'title' => 'markasjunk2.buttonnotjunk', 'label' => 'markasjunk2.notjunk'), 'toolbar');
 			}
+>>>>>>> 805939eb36bbd0cbb421ccc2cacc1d009b1c2620
 			else {
-				// add the buttons to the mark message menu
 				$markjunk = $this->api->output->button(array('command' => 'plugin.markasjunk2.junk', 'label' => 'markasjunk2.markasjunk', 'id' => 'markasjunk2', 'class' => 'icon markasjunk2', 'classact' => 'icon markasjunk2 active', 'innerclass' => 'icon markasjunk2'));
 				$marknotjunk = $this->api->output->button(array('command' => 'plugin.markasjunk2.not_junk', 'label' => 'markasjunk2.markasnotjunk', 'id' => 'markasnotjunk2', 'class' => 'icon markasnotjunk2', 'classact' => 'icon markasnotjunk2 active', 'innerclass' => 'icon markasnotjunk2'));
+<<<<<<< HEAD
 				$this->api->add_content(html::tag('li', array('role' => 'menuitem'), $markjunk), 'markmenu');
 				$this->api->add_content(html::tag('li', array('role' => 'menuitem'), $marknotjunk), 'markmenu');
 			}
 
 			// add markasjunk2 folder settings to the env for JS
+=======
+<<<<<<< HEAD
+				$this->api->add_content(html::tag('li', array('style' => $display_junk), $markjunk), 'markmenu');
+				$this->api->add_content(html::tag('li', array('style' => $display_not_junk), $marknotjunk), 'markmenu');
+			}
+
+			$this->api->output->set_env('markasjunk2_override', $mb_override);
+=======
+				$this->api->add_content(html::tag('li', array('role' => 'menuitem'), $markjunk), 'markmenu');
+				$this->api->add_content(html::tag('li', array('role' => 'menuitem'), $marknotjunk), 'markmenu');
+			}
+
+			// add markasjunk2 folder settings to the env for JS
+>>>>>>> 805939eb36bbd0cbb421ccc2cacc1d009b1c2620
+>>>>>>> temp
 			$this->api->output->set_env('markasjunk2_ham_mailbox', $this->ham_mbox);
 			$this->api->output->set_env('markasjunk2_spam_mailbox', $this->spam_mbox);
 
@@ -83,148 +139,117 @@ class markasjunk2 extends rcube_plugin
 		}
 	}
 
-	function mark_message()
+	function mark_junk()
 	{
 		$this->add_texts('localization');
+		$this->_set_flags();
 
-		$is_spam = rcube::get_instance()->action == 'plugin.markasjunk2.junk' ? true : false;
-		$multi_folder = $_POST['_multifolder'] == 'true' ? true : false;
-		$messageset = rcmail::get_uids();
-		$mbox_name = rcube_utils::get_input_value('_mbox', rcube_utils::INPUT_POST);
-		$dest_mbox = $is_spam ? $this->spam_mbox : $this->ham_mbox;
-		$result = $is_spam ? $this->_spam($messageset, $dest_mbox) : $this->_ham($messageset, $dest_mbox);
+		$uids = rcube_utils::get_input_value('_uid', rcube_utils::INPUT_POST);
+		$mbox = rcube_utils::get_input_value('_mbox', rcube_utils::INPUT_POST);
 
-		if ($result) {
-			if ($dest_mbox && ($mbox_name !== $dest_mbox || $multi_folder)) {
-				$this->api->output->command('rcmail_markasjunk2_move', $dest_mbox, $this->_messageset_to_uids($messageset, $multi_folder));
-			}
-			else {
-				$this->api->output->command('command', 'list', $mbox_name);
-			}
-
-			$this->api->output->command('display_message', $is_spam ? $this->gettext('reportedasjunk') : $this->gettext('reportedasnotjunk'), 'confirmation');
-		}
+		if ($this->_spam($uids, $mbox, $this->spam_mbox))
+			$this->api->output->command('display_message', $this->gettext('reportedasjunk'), 'confirmation');
 
 		$this->api->output->send();
 	}
 
-	function set_flags($p)
+	function mark_notjunk()
 	{
-		$rcmail = rcube::get_instance();
+		$this->add_texts('localization');
+		$this->_set_flags();
 
-		$flags = array(
-			$this->spam_flag => $rcmail->config->get('markasjunk2_spam_flag'),
-			$this->ham_flag => $rcmail->config->get('markasjunk2_ham_flag')
-		);
+		$uids = rcube_utils::get_input_value('_uid', rcube_utils::INPUT_POST);
+		$mbox = rcube_utils::get_input_value('_mbox', rcube_utils::INPUT_POST);
 
-		$p['message_flags'] = array_merge((array)$p['message_flags'], $flags);
+		if ($this->_ham($uids, $mbox, $this->ham_mbox))
+			$this->api->output->command('display_message', $this->gettext('reportedasnotjunk'), 'confirmation');
 
-		return $p;
+		$this->api->output->send();
 	}
 
-	private function _set_toolbar_display($display, $action)
-	{
-		$ret = true;
-
-		// backwards compatibility for old config options (removed in 1.10)
-		if ($display < 0) {
-			$rcmail = rcube::get_instance();
-			$mb = $rcmail->config->get('markasjunk2_mb_toolbar', true);
-			$cp = $rcmail->config->get('markasjunk2_cp_toolbar', true);
-
-			if ($mb && $cp) {
-				$display = 1;
-			}
-			elseif ($mb && !$cp) {
-				$display = 2;
-			}
-			elseif (!$mb && $cp) {
-				$display = 3;
-			}
-			else {
-				$display = 0;
-			}
-		}
-
-		switch ($display) {
-			case 0: // always show in mark message menu
-				$ret = false;
-				break;
-			case 1: // always show on toolbar
-				$ret = true;
-				break;
-			case 2: // show in toolbar on mailbox screen, show in mark message menu message on screen
-				$ret = ($action != 'show');
-				break;
-			case 3: // show in mark message menu on mailbox screen, show in toolbar message on screen
-				$ret = ($action == 'show');
-				break;
-		}
-
-		return $ret;
-	}
-
-	private function _spam(&$messageset, $dest_mbox = NULL)
+	private function _spam($uids, $mbox_name = NULL, $dest_mbox = NULL)
 	{
 		$rcmail = rcube::get_instance();
-		$storage = $rcmail->get_storage();
-		$result = true;
+		$storage = $rcmail->storage;
 
-		foreach ($messageset as $mbox => &$uids) {
-			$storage->set_folder($mbox);
+		if ($rcmail->config->get('markasjunk2_learning_driver', false)) {
+			$result = $this->_call_driver($uids, true);
 
+<<<<<<< HEAD
+			if (!$result)
+				return false;
+		}
+=======
 			if ($rcmail->config->get('markasjunk2_learning_driver', false)) {
 				$result = $this->_call_driver('spam', $uids, $mbox);
+<<<<<<< HEAD
+=======
+>>>>>>> 805939eb36bbd0cbb421ccc2cacc1d009b1c2620
+>>>>>>> temp
 
-				// abort function of the driver says so
-				if (!$result)
-					break;
-			}
+		if ($rcmail->config->get('markasjunk2_read_spam', false))
+			$storage->set_flag($uids, 'SEEN', $mbox_name);
 
-			if ($rcmail->config->get('markasjunk2_read_spam', false))
-				$storage->set_flag($uids, 'SEEN', $mbox);
+		if ($rcmail->config->get('markasjunk2_spam_flag', false))
+			$storage->set_flag($uids, $this->spam_flag, $mbox_name);
 
-			if ($rcmail->config->get('markasjunk2_spam_flag', false))
-				$storage->set_flag($uids, $this->spam_flag, $mbox);
+		if ($rcmail->config->get('markasjunk2_ham_flag', false))
+			$storage->unset_flag($uids, $this->ham_flag, $mbox_name);
 
-			if ($rcmail->config->get('markasjunk2_ham_flag', false))
-				$storage->unset_flag($uids, $this->ham_flag, $mbox);
-		}
+		if ($dest_mbox && $mbox_name != $dest_mbox)
+			$this->api->output->command('rcmail_markasjunk2_move', $dest_mbox, $uids);
+		else
+			$this->api->output->command('command', 'list', $mbox_name);
 
-		return $result;
+		return true;
 	}
 
-	private function _ham(&$messageset, $dest_mbox = NULL)
+	private function _ham($uids, $mbox_name = NULL, $dest_mbox = NULL)
 	{
 		$rcmail = rcube::get_instance();
-		$storage = $rcmail->get_storage();
-		$result = true;
+		$storage = $rcmail->storage;
 
-		foreach ($messageset as $mbox => &$uids) {
-			$storage->set_folder($mbox);
+		if ($rcmail->config->get('markasjunk2_learning_driver', false)) {
+			$result = $this->_call_driver($uids, false);
 
+<<<<<<< HEAD
+			if (!$result)
+				return false;
+		}
+=======
 			if ($rcmail->config->get('markasjunk2_learning_driver', false)) {
 				$result = $this->_call_driver('ham', $uids, $mbox);
+<<<<<<< HEAD
+=======
+>>>>>>> 805939eb36bbd0cbb421ccc2cacc1d009b1c2620
+>>>>>>> temp
 
-				// abort function of the driver says so
-				if (!$result)
-					break;
-			}
+		if ($rcmail->config->get('markasjunk2_unread_ham', false))
+			$storage->unset_flag($uids, 'SEEN', $mbox_name);
 
-			if ($rcmail->config->get('markasjunk2_unread_ham', false))
-				$storage->unset_flag($uids, 'SEEN', $mbox);
+		if ($rcmail->config->get('markasjunk2_spam_flag', false))
+			$storage->unset_flag($uids, $this->spam_flag, $mbox_name);
 
-			if ($rcmail->config->get('markasjunk2_spam_flag', false))
-				$storage->unset_flag($uids, $this->spam_flag, $mbox);
+		if ($rcmail->config->get('markasjunk2_ham_flag', false))
+			$storage->set_flag($uids, $this->ham_flag, $mbox_name);
 
-			if ($rcmail->config->get('markasjunk2_ham_flag', false))
-				$storage->set_flag($uids, $this->ham_flag, $mbox);
-		}
+		if ($dest_mbox && $mbox_name != $dest_mbox)
+			$this->api->output->command('rcmail_markasjunk2_move', $dest_mbox, $uids);
+		else
+			$this->api->output->command('command', 'list', $mbox_name);
 
-		return $result;
+		return true;
 	}
 
+<<<<<<< HEAD
 	private function _call_driver($action, &$uids = null, $mbox = null)
+=======
+<<<<<<< HEAD
+	private function _call_driver(&$uids, $spam)
+=======
+	private function _call_driver($action, &$uids = null, $mbox = null)
+>>>>>>> 805939eb36bbd0cbb421ccc2cacc1d009b1c2620
+>>>>>>> temp
 	{
 		$driver = $this->home.'/drivers/'. rcube::get_instance()->config->get('markasjunk2_learning_driver', 'cmd_learn') .'.php';
 		$class = 'markasjunk2_' . rcube::get_instance()->config->get('markasjunk2_learning_driver', 'cmd_learn');
@@ -251,7 +276,6 @@ class markasjunk2 extends rcube_plugin
 				), true, false);
 		}
 
-		// call the relevant function from the driver
 		$object = new $class;
 		if ($action == 'spam')
 			$object->spam($uids, $mbox);
@@ -263,17 +287,23 @@ class markasjunk2 extends rcube_plugin
 		return $object->is_error ? false : true;
 	}
 
-	private function _messageset_to_uids($messageset, $multi_folder)
+	private function _set_flags()
 	{
-		$a_uids = array();
+		$rcmail = rcube::get_instance();
 
-		foreach ($messageset as $mbox => $uids) {
-			foreach ($uids as $uid) {
-				$a_uids[] = $multi_folder ? $uid . '-' . $mbox : $uid;
-			}
+		if ($rcmail->config->get('markasjunk2_spam_flag', false)) {
+			if ($flag = array_search($rcmail->config->get('markasjunk2_spam_flag'), $rcmail->storage->conn->flags))
+				$this->spam_flag = $flag;
+			else
+				$rcmail->storage->conn->flags[$this->spam_flag] = $rcmail->config->get('markasjunk2_spam_flag');
 		}
 
-		return $a_uids;
+		if ($rcmail->config->get('markasjunk2_ham_flag', false)) {
+			if ($flag = array_search($rcmail->config->get('markasjunk2_ham_flag'), $rcmail->storage->conn->flags))
+				$this->ham_flag = $flag;
+			else
+				$rcmail->storage->conn->flags[$this->ham_flag] = $rcmail->config->get('markasjunk2_ham_flag');
+		}
 	}
 }
 

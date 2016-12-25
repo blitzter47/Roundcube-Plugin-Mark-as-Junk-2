@@ -4,6 +4,7 @@
  * Email learn driver
  * @version 2.0
  * @author Philip Weir
+ * Modified by Chi-Huy Trinh, 2016
  *
  * Copyright (C) 2009-2014 Philip Weir
  *
@@ -74,7 +75,8 @@ class markasjunk2_email_learn
 		$headers['To'] = $mailto;
 		$headers['Subject'] = $subject;
 
-		foreach ($uids as $uid) {
+        $uids_arr = explode(',',$uids);
+		foreach ($uids_arr as $uid) {
 			$MESSAGE = new rcube_message($uid);
 
 			// set message charset as default
